@@ -30,8 +30,12 @@ def ingestion(configs: Dict[str, Any]) -> pd.DataFrame:
     if "results" not in data:
         raise ValueError("Resposta da API não contém a chave 'results'")
 
-    print(f"Dados ingeridos: {len(data['results'])} registros")
-    return pd.DataFrame(data["results"])
+    df = pd.DataFrame(data["results"])
+    print(f"Dados ingeridos: {len(df)} registros")
+    print(f"Colunas do DataFrame ingerido: {list(df.columns)}")
+    print(f"Primeiras linhas do DataFrame ingerido:\n{df.head()}\n")
+    logging.info(f"Ingestão realizada com {len(df)} registros.")
+    return df
 
 
 
@@ -47,7 +51,9 @@ def validation_inputs(df: pd.DataFrame, configs: Dict[str, Any]) -> bool:
         bool: True se os dados estiverem corretos, caso contrário levanta exceção.
     """
 
+
     if df is None or df.empty:
+        print("[VALIDAÇÃO] DataFrame vazio ou inexistente")
         logging.error("DataFrame vazio ou inexistente")
         raise ValueError("Erro de validação: DataFrame vazio")
 
@@ -56,9 +62,11 @@ def validation_inputs(df: pd.DataFrame, configs: Dict[str, Any]) -> bool:
     missing_columns = [col for col in required_columns if col not in df.columns]
 
     if missing_columns:
+        print(f"[VALIDAÇÃO] Colunas obrigatórias ausentes: {missing_columns}")
         logging.error(f"Colunas obrigatórias ausentes: {missing_columns}")
         raise ValueError("Erro de validação: schema inválido")
 
+    print(f"[VALIDAÇÃO] DataFrame validado com sucesso. Colunas presentes: {list(df.columns)}")
     logging.info("Dados corretos")
     return True
 
@@ -102,8 +110,14 @@ def preparation(df: pd.DataFrame, configs: Optional[Dict[str, Any]] = None) -> p
 
     import os
     import sqlite3
+    # 0. Validar dados com nomes originais
+    if configs:
+        validation_inputs(df, configs)
+
     # 1. Renomear colunas
     data = df.rename(columns={"name": "nome", "phone": "telefone"})
+    print(f"[PREPARAÇÃO] Após renomear colunas iniciais: {list(data.columns)}")
+    print(f"[PREPARAÇÃO] Após renomear colunas iniciais:\n{data.head()}\n")
 
     # 2. Renomear para nomes finais
     expected_columns = {
@@ -121,14 +135,14 @@ def preparation(df: pd.DataFrame, configs: Optional[Dict[str, Any]] = None) -> p
         "nat": "estado",
     }
     data = data.rename(columns=expected_columns)
+    print(f"[PREPARAÇÃO] Após renomear para nomes finais: {list(data.columns)}")
+    print(f"[PREPARAÇÃO] Após renomear para nomes finais:\n{data.head()}\n")
 
     # 3. Remover caracteres especiais
     for col in data.select_dtypes(include="object").columns:
         data[col] = data[col].apply(remove_caracter_especial)
-
-    # 4. Validar dados
-    if configs:
-        validation_inputs(data, configs)
+    print(f"[PREPARAÇÃO] Após remover caracteres especiais: {list(data.columns)}")
+    print(f"[PREPARAÇÃO] Após remover caracteres especiais:\n{data.head()}\n")
 
     # 5. Salvar em SQLite
     assets_dir = os.path.join(os.path.dirname(__file__), '..', 'assets')
@@ -137,5 +151,6 @@ def preparation(df: pd.DataFrame, configs: Optional[Dict[str, Any]] = None) -> p
     conn = sqlite3.connect(db_path)
     data.to_sql('usuarios', conn, if_exists='replace', index=False)
     conn.close()
+    print(f"[PREPARAÇÃO] Dados preparados e salvos com sucesso em {db_path}")
     logging.info(f"Dados preparados e salvos com sucesso em {db_path}")
     return data
