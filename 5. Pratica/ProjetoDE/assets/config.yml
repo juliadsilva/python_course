@@ -1,0 +1,19 @@
+
+api:
+	url: "https://randomuser.me/api"
+ingestion:
+	results_per_page: 10
+validation:
+	required_columns:
+		- gender
+		- name
+		- location
+		- email
+		- login
+		- dob
+		- registered
+		- phone
+		- cell
+		- id
+		- picture
+		- nat

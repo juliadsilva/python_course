@@ -1,4 +1,10 @@
 {
     "python-envs.defaultEnvManager": "ms-python.python:venv",
-    "python-envs.defaultPackageManager": "ms-python.python:pip"
+    "python-envs.defaultPackageManager": "ms-python.python:pip",
+    "chat.tools.terminal.autoApprove": {
+        "/^python 5\\. Pratica/ProjetoDE/src/app\\.py$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
 }
