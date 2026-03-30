@@ -1,0 +1,23 @@
+quanti_variables:
+  - tenure
+  - MonthlyCharges
+  - TotalCharges
+
+quali_variables:
+  - OnlineSecurity
+  - TechSupport
+
+model_variables:
+  - tenure
+  - MonthlyCharges
+  - TotalCharges
+  - OnlineSecurity_No
+  - OnlineSecurity_No_internet_service
+  - OnlineSecurity_Yes
+  - TechSupport_No
+  - TechSupport_No_internet_service
+  - TechSupport_Yes
+
+trained_model_file: assets/lr_model.pkl
+
+preprocess_model_file: assets/preprocessador.pkl
